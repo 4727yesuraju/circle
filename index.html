@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing: border-box;;
+        }
+        body{
+            overflow:hidden;
+        }
+        #canvas{
+            background:#000;
+            width:100vw;
+            height:100%;
+        }
+    </style>
+
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+
+        const ctx = canvas.getContext('2d');
+
+        
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+
+        const particlesArray = [];
+        let hue = 0;
+
+        //window is default object
+        addEventListener('resize',()=>{
+            
+        console.log(innerHeight,innerWidth)
+            canvas.width =  innerWidth;
+            canvas.height =  innerHeight;
+        })
+
+        const mouse = {
+            x:undefined,
+            y:undefined
+        }
+
+        canvas.addEventListener('mousemove',(event)=>{
+            mouse.x = event.x;
+            mouse.y = event.y;
+            for(let i=0;i<2;i++){
+                particlesArray.push(new Particle());
+            }
+        })
+
+        canvas.addEventListener('click',(event)=>{
+            mouse.x = event.x;
+            mouse.y = event.y;
+            for(let i=0;i<10;i++){
+                particlesArray.push(new Particle());
+            }
+        })
+
+        class Particle{
+            constructor(){
+                this.x = mouse.x;
+                this.y = mouse.y;
+                this.size = Math.random() * 20 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color =  'hsl(' + hue + ',100%, 50%)';
+            }
+            update(){
+  
+                if(this.x + this.size >= canvas.width) this.speedX = -1 * this.speedX;
+                if(this.x - this.size <= 0 ) this.speedX = -1 * this.speedX;
+                if(this.y + this.size >= canvas.height) this.speedY = -1 * this.speedY;
+                if(this.y -this.size <= 0) this.speedY = -1 * this.speedY;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if(this.size > 0.2) this.size -= 0.04;
+            }
+            draw(){
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        console.log(particlesArray);
+        function handleParticles(){
+            for(let i=0;i<particlesArray.length;i++){
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                for(let j=0;j<particlesArray.length;j++){
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    if(Math.sqrt(dx*dx + dy*dy)<100){
+                        ctx.beginPath();
+                        ctx.strokeStyle = particlesArray[i].color;
+                        ctx.lineWidth = .1;
+                        ctx.moveTo(particlesArray[i].x,particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x,particlesArray[j].y);
+                        ctx.stroke();
+                    }
+                }
+                if(particlesArray[i].size <= .3){
+                    particlesArray.splice(i,1);
+                    --i;
+                }
+            }
+        }
+
+
+        function anime(){
+            ctx.fillStyle = 'rgba(0,0,0,.4)';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            handleParticles();
+            hue+=3;
+            requestAnimationFrame(anime);
+        }anime();
+   
+
+    </script>
+</body>
+</html>
